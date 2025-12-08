@@ -1,5 +1,9 @@
 # CleanClaudeConfig (ccc)
 
+[![CI](https://github.com/mhk/ccc/actions/workflows/ci.yml/badge.svg)](https://github.com/mhk/ccc/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mhk/ccc)](https://goreportcard.com/report/github.com/mhk/ccc)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/mhk/GIST_ID/raw/ccc-coverage.json)](https://github.com/mhk/ccc/actions/workflows/ci.yml)
+
 A CLI utility to clean up Claude Code configuration by:
 
 1. **Removing stale project session data** - when project directories no longer exist on disk
@@ -63,15 +67,26 @@ ccc list orphans                   # List orphaned data without removing
 Tests are written before implementation (TDD).
 
 ```bash
-# Run unit tests
-go test ./...
+# Using Make (recommended)
+make test          # Run unit tests
+make test-safety   # Run safety tests
+make test-e2e      # Run E2E tests in Docker
+make test-all      # Run all local tests
+make quality       # Run full code quality checks
+make help          # Show all available targets
 
-# Run safety tests (verifies the tool never deletes existing projects)
-go test -v -tags=safety ./test/safety/...
-
-# Run full code quality checks (formatting, vet, tests, coverage)
-./scripts/code_quality.sh
+# Or run directly
+go test ./...                                    # Unit tests
+go test -v -tags=safety ./test/safety/...        # Safety tests
+docker build -t ccc-test -f test/Dockerfile . && docker run --rm ccc-test  # E2E tests
+./scripts/code_quality.sh                        # Full code quality checks
 ```
+
+### Coverage Badge Setup
+
+To enable the coverage badge, create a GitHub Gist and set these repository variables/secrets:
+- `COVERAGE_GIST_ID` (repository variable): The Gist ID for storing coverage data
+- `GIST_TOKEN` (repository secret): A GitHub token with gist write permissions
 
 ## Claude Code Directory Layout
 
