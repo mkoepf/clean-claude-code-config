@@ -32,7 +32,7 @@ ccc list orphans                   # List orphaned data without removing
 | `internal/claude/sessions.go` | ✅ Complete | Parse session files, extract cwd |
 | `internal/claude/paths.go` | ✅ Complete | Discover Claude directories |
 | `internal/claude/projects.go` | ✅ Complete | Scan and analyze projects |
-| `internal/claude/config.go` | ⬜ Not started | Parse settings files |
+| `internal/claude/config.go` | ✅ Complete | Parse settings files |
 
 ### Phase 2: UI Components
 
@@ -47,7 +47,7 @@ ccc list orphans                   # List orphaned data without removing
 | Component | Status | Description |
 |-----------|--------|-------------|
 | `internal/cleaner/stale.go` | ✅ Complete | Find and clean stale projects |
-| `internal/cleaner/orphans.go` | ⬜ Not started | Find and clean orphans |
+| `internal/cleaner/orphans.go` | ✅ Complete | Find and clean orphans |
 | `internal/cleaner/dedup.go` | ⬜ Not started | Config deduplication |
 
 ### Phase 4: CLI Interface
