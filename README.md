@@ -63,14 +63,14 @@ ccc list orphans                   # List orphaned data without removing
 Tests are written before implementation (TDD).
 
 ```bash
-# Run tests
+# Run unit tests
 go test ./...
+
+# Run safety tests (verifies the tool never deletes existing projects)
+go test -v -tags=safety ./test/safety/...
 
 # Run full code quality checks (formatting, vet, tests, coverage)
 ./scripts/code_quality.sh
-
-# View code metrics
-./scripts/code_metrics.sh
 ```
 
 ## Claude Code Directory Layout
