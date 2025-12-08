@@ -7,7 +7,7 @@
 
 # Claude
 .claude/
-CLAUDE.md
+CLAUDE*.md
 
 # Quality checks
 coverage.out
