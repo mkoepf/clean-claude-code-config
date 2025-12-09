@@ -379,6 +379,127 @@ func TestRunCLI_CleanOrphansDryRun(t *testing.T) {
 	assert.FileExists(t, orphanTodo)
 }
 
+func TestParseArgs_ListConfig(t *testing.T) {
+	args, err := parseArgs([]string{"list", "config"})
+	require.NoError(t, err)
+	assert.Equal(t, "list", args.Command)
+	assert.Equal(t, "config", args.Subcommand)
+}
+
+func TestRunCLI_ListConfigNoDuplicates(t *testing.T) {
+	tmpDir := t.TempDir()
+	claudeDir := filepath.Join(tmpDir, ".claude")
+	projectsDir := filepath.Join(claudeDir, "projects")
+	require.NoError(t, os.MkdirAll(projectsDir, 0755))
+
+	// Create global settings
+	globalSettings := `{"permissions":{"allow":["Bash(git:*)","Read(**)"],"deny":["Bash(rm -rf:*)"]}}`
+	require.NoError(t, os.WriteFile(filepath.Join(claudeDir, "settings.json"), []byte(globalSettings), 0644))
+
+	// Create a project with local settings that have NO duplicates with global
+	projectDir := filepath.Join(tmpDir, "myproject")
+	projectClaudeDir := filepath.Join(projectDir, ".claude")
+	require.NoError(t, os.MkdirAll(projectClaudeDir, 0755))
+	localSettings := `{"permissions":{"allow":["Bash(npm:*)","Bash(docker:*)"]}}`
+	require.NoError(t, os.WriteFile(filepath.Join(projectClaudeDir, "settings.local.json"), []byte(localSettings), 0644))
+
+	// Register this project
+	encodedProjectDir := filepath.Join(projectsDir, "-myproject")
+	require.NoError(t, os.MkdirAll(encodedProjectDir, 0755))
+	sessionData := `{"sessionId":"sess1","cwd":"` + filepath.ToSlash(projectDir) + `","timestamp":"2025-01-01T00:00:00Z"}`
+	require.NoError(t, os.WriteFile(filepath.Join(encodedProjectDir, "session.jsonl"), []byte(sessionData), 0644))
+
+	// Set environment to use temp dir
+	cleanup := setTestHome(t, tmpDir)
+	defer cleanup()
+
+	var stdout, stderr bytes.Buffer
+	stdin := strings.NewReader("")
+
+	code := runCLI([]string{"list", "config"}, stdin, &stdout, &stderr)
+
+	assert.Equal(t, 0, code)
+	assert.Contains(t, stdout.String(), "No duplicate configs found")
+}
+
+func TestRunCLI_ListConfigWithDuplicates(t *testing.T) {
+	tmpDir := t.TempDir()
+	claudeDir := filepath.Join(tmpDir, ".claude")
+	projectsDir := filepath.Join(claudeDir, "projects")
+	require.NoError(t, os.MkdirAll(projectsDir, 0755))
+
+	// Create global settings
+	globalSettings := `{"permissions":{"allow":["Bash(git:*)","Read(**)"],"deny":["Bash(rm -rf:*)"]}}`
+	require.NoError(t, os.WriteFile(filepath.Join(claudeDir, "settings.json"), []byte(globalSettings), 0644))
+
+	// Create a project with local settings that duplicate global
+	projectDir := filepath.Join(tmpDir, "myproject")
+	projectClaudeDir := filepath.Join(projectDir, ".claude")
+	require.NoError(t, os.MkdirAll(projectClaudeDir, 0755))
+	localSettings := `{"permissions":{"allow":["Bash(git:*)","Bash(npm:*)"],"deny":["Bash(rm -rf:*)"]}}`
+	require.NoError(t, os.WriteFile(filepath.Join(projectClaudeDir, "settings.local.json"), []byte(localSettings), 0644))
+
+	// Register this project
+	encodedProjectDir := filepath.Join(projectsDir, "-myproject")
+	require.NoError(t, os.MkdirAll(encodedProjectDir, 0755))
+	sessionData := `{"sessionId":"sess1","cwd":"` + filepath.ToSlash(projectDir) + `","timestamp":"2025-01-01T00:00:00Z"}`
+	require.NoError(t, os.WriteFile(filepath.Join(encodedProjectDir, "session.jsonl"), []byte(sessionData), 0644))
+
+	// Set environment to use temp dir
+	cleanup := setTestHome(t, tmpDir)
+	defer cleanup()
+
+	var stdout, stderr bytes.Buffer
+	stdin := strings.NewReader("")
+
+	code := runCLI([]string{"list", "config"}, stdin, &stdout, &stderr)
+
+	assert.Equal(t, 0, code)
+	output := stdout.String()
+	// Should show config deduplication info
+	assert.Contains(t, output, "Config Deduplication")
+	assert.Contains(t, output, "settings.local.json")
+}
+
+func TestRunCLI_ListConfigVerbose(t *testing.T) {
+	tmpDir := t.TempDir()
+	claudeDir := filepath.Join(tmpDir, ".claude")
+	projectsDir := filepath.Join(claudeDir, "projects")
+	require.NoError(t, os.MkdirAll(projectsDir, 0755))
+
+	// Create global settings
+	globalSettings := `{"permissions":{"allow":["Bash(git:*)","Read(**)"],"deny":["Bash(rm -rf:*)"]}}`
+	require.NoError(t, os.WriteFile(filepath.Join(claudeDir, "settings.json"), []byte(globalSettings), 0644))
+
+	// Create a project with local settings that duplicate global
+	projectDir := filepath.Join(tmpDir, "myproject")
+	projectClaudeDir := filepath.Join(projectDir, ".claude")
+	require.NoError(t, os.MkdirAll(projectClaudeDir, 0755))
+	localSettings := `{"permissions":{"allow":["Bash(git:*)","Bash(npm:*)"],"deny":["Bash(rm -rf:*)"]}}`
+	require.NoError(t, os.WriteFile(filepath.Join(projectClaudeDir, "settings.local.json"), []byte(localSettings), 0644))
+
+	// Register this project
+	encodedProjectDir := filepath.Join(projectsDir, "-myproject")
+	require.NoError(t, os.MkdirAll(encodedProjectDir, 0755))
+	sessionData := `{"sessionId":"sess1","cwd":"` + filepath.ToSlash(projectDir) + `","timestamp":"2025-01-01T00:00:00Z"}`
+	require.NoError(t, os.WriteFile(filepath.Join(encodedProjectDir, "session.jsonl"), []byte(sessionData), 0644))
+
+	// Set environment to use temp dir
+	cleanup := setTestHome(t, tmpDir)
+	defer cleanup()
+
+	var stdout, stderr bytes.Buffer
+	stdin := strings.NewReader("")
+
+	code := runCLI([]string{"list", "config", "--verbose"}, stdin, &stdout, &stderr)
+
+	assert.Equal(t, 0, code)
+	output := stdout.String()
+	// Verbose should show the specific duplicate entries
+	assert.Contains(t, output, "Bash(git:*)")
+	assert.Contains(t, output, "Bash(rm -rf:*)")
+}
+
 func TestParseArgs_VerboseFlag(t *testing.T) {
 	args, err := parseArgs([]string{"clean", "config", "--verbose"})
 	require.NoError(t, err)

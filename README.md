@@ -25,46 +25,12 @@ ccc clean orphans [--dry-run]      # Remove orphaned data
 ccc clean config [--dry-run]       # Deduplicate local configs against global settings
 ccc list projects [--stale-only]   # List all projects with their status
 ccc list orphans                   # List orphaned data without removing
+ccc list config [--verbose]        # List duplicate config entries without removing
 ```
 
-## Implementation Status
+## Development & Testing
 
-### Phase 1: Core Library
-
-| Component | Status | Description |
-|-----------|--------|-------------|
-| `internal/claude/sessions.go` | ✅ Complete | Parse session files, extract cwd |
-| `internal/claude/paths.go` | ✅ Complete | Discover Claude directories |
-| `internal/claude/projects.go` | ✅ Complete | Scan and analyze projects |
-| `internal/claude/config.go` | ✅ Complete | Parse settings files |
-
-### Phase 2: UI Components
-
-| Component | Status | Description |
-|-----------|--------|-------------|
-| `internal/ui/preview.go` | ✅ Complete | Preview display formatting |
-| `internal/ui/confirm.go` | ✅ Complete | Confirmation prompts |
-| `internal/ui/audit.go` | ✅ Complete | Audit trail logging |
-
-### Phase 3: Cleanup Operations
-
-| Component | Status | Description |
-|-----------|--------|-------------|
-| `internal/cleaner/stale.go` | ✅ Complete | Find and clean stale projects |
-| `internal/cleaner/orphans.go` | ✅ Complete | Find and clean orphans |
-| `internal/cleaner/dedup.go` | ✅ Complete | Config deduplication |
-
-### Phase 4: CLI Interface
-
-| Component | Status | Description |
-|-----------|--------|-------------|
-| `cmd/ccc/main.go` | ✅ Complete | Full CLI implementation |
-
-**Legend:** ✅ Complete | 🔲 Stub (tests written, not implemented) | ⬜ Not started
-
-## Development
-
-Tests are written before implementation (TDD).
+There is a Makefile to conveniently run various tests: 
 
 ```bash
 # Using Make (recommended)
@@ -82,15 +48,15 @@ docker build -t ccc-test -f test/Dockerfile . && docker run --rm ccc-test  # E2E
 ./scripts/code_quality.sh                        # Full code quality checks
 ```
 
-### Coverage Badge Setup
+## Terminology
 
-To enable the coverage badge, create a GitHub Gist and set these repository variables/secrets:
-- `COVERAGE_GIST_ID` (repository variable): The Gist ID for storing coverage data
-- `GIST_TOKEN` (repository secret): A GitHub token with gist write permissions
+- **Stale project**: A project directory registered in `~/.claude/projects/` whose corresponding source directory no longer exists on disk.
+- **Orphaned data**: Files in `todos/`, `file-history/`, or `session-env/` that reference sessions which no longer exist, or empty session directories.
 
 ## Claude Code Directory Layout
 
-The tool works with the standard Claude Code directory structure:
+The tool was developed against Claude Code 2.0.62 and assumes the following
+Claude Code directory structure:
 
 ```
 ~/.claude/

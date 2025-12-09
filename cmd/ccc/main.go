@@ -112,11 +112,12 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "Usage:")
 	fmt.Fprintln(w, "  ccc clean [--dry-run] [--yes]      Clean all: stale projects, orphans, config duplicates")
-	fmt.Fprintln(w, "  ccc clean projects [--dry-run]    Remove stale project session data")
-	fmt.Fprintln(w, "  ccc clean orphans [--dry-run]     Remove orphaned data")
-	fmt.Fprintln(w, "  ccc clean config [--dry-run]      Deduplicate local configs against global settings")
-	fmt.Fprintln(w, "  ccc list projects [--stale-only]  List all projects with their status")
-	fmt.Fprintln(w, "  ccc list orphans                  List orphaned data without removing")
+	fmt.Fprintln(w, "  ccc clean projects [--dry-run]     Remove stale project session data")
+	fmt.Fprintln(w, "  ccc clean orphans [--dry-run]      Remove orphaned data")
+	fmt.Fprintln(w, "  ccc clean config [--dry-run]       Deduplicate local configs against global settings")
+	fmt.Fprintln(w, "  ccc list projects [--stale-only]   List all projects with their status")
+	fmt.Fprintln(w, "  ccc list orphans                   List orphaned data without removing")
+	fmt.Fprintln(w, "  ccc list config [--verbose]        List duplicate config entries without removing")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "Flags:")
 	fmt.Fprintln(w, "  --dry-run      Show what would be cleaned without making changes")
@@ -159,6 +160,8 @@ func handleList(args *Args, paths *claude.Paths, stdout, stderr io.Writer) int {
 		return listProjects(args, paths, stdout, stderr)
 	case "orphans":
 		return listOrphans(paths, stdout, stderr)
+	case "config":
+		return listConfig(args, paths, stdout, stderr)
 	default:
 		fmt.Fprintf(stderr, "Unknown list subcommand: %s\n", args.Subcommand)
 		return 1
@@ -481,6 +484,72 @@ func listOrphans(paths *claude.Paths, stdout, stderr io.Writer) int {
 	}
 
 	preview := cleaner.BuildOrphanPreview(orphans)
+	_ = preview.Display(stdout)
+
+	return 0
+}
+
+// listConfig lists duplicate config entries without removing them.
+func listConfig(args *Args, paths *claude.Paths, stdout, stderr io.Writer) int {
+	// Load global settings
+	global, err := claude.LoadSettings(paths.Settings)
+	if err != nil {
+		fmt.Fprintln(stderr, "Error loading global settings:", err)
+		return 1
+	}
+
+	// Get project paths from scanned projects for fast config lookup
+	projects, err := claude.ScanProjects(paths.Projects)
+	if err != nil {
+		fmt.Fprintln(stderr, "Error scanning projects:", err)
+		return 1
+	}
+
+	// Extract unique project paths
+	var projectPaths []string
+	for _, p := range projects {
+		if p.ActualPath != "" {
+			projectPaths = append(projectPaths, p.ActualPath)
+		}
+	}
+
+	// Find local configs only in known project directories (fast)
+	homeLocalSettings := filepath.Join(paths.Root, "settings.local.json")
+	localConfigs := cleaner.FindLocalConfigsFromProjects(projectPaths, homeLocalSettings)
+
+	if len(localConfigs) == 0 {
+		fmt.Fprintln(stdout, "No local configs found.")
+		return 0
+	}
+
+	// Analyze each local config
+	var results []cleaner.DedupResult
+	for _, configPath := range localConfigs {
+		local, err := claude.LoadSettings(configPath)
+		if err != nil {
+			fmt.Fprintf(stderr, "Warning: could not load %s: %v\n", configPath, err)
+			continue
+		}
+
+		result := cleaner.DeduplicateConfig(configPath, global, local)
+		if result.HasDuplicates() || result.SuggestDelete {
+			results = append(results, *result)
+		}
+	}
+
+	if len(results) == 0 {
+		fmt.Fprintln(stdout, "No duplicate configs found.")
+		return 0
+	}
+
+	// Use verbose preview if requested
+	var preview *ui.Preview
+	if args.Verbose {
+		preview = cleaner.BuildDedupPreviewVerbose(results, paths.Settings)
+	} else {
+		preview = cleaner.BuildDedupPreview(results)
+	}
+
 	_ = preview.Display(stdout)
 
 	return 0
