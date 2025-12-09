@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Code Metrics Script for ccc (CleanClaudeConfig)
+# Code Metrics Script for cccc (Clean Claude Code Config)
 # Measures lines of code by component, distinguishing test code from production code
 #
 
@@ -52,7 +52,7 @@ count_files() {
 echo ""
 echo -e "${BOLD}Code Metrics Report${RESET}"
 echo -e "${GRAY}Generated: $(date '+%Y-%m-%d %H:%M:%S')${RESET}"
-echo -e "${GRAY}Project: ccc${RESET}"
+echo -e "${GRAY}Project: cccc${RESET}"
 echo ""
 
 # Define components

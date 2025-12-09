@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/mhk/ccc/internal/claude"
-	"github.com/mhk/ccc/internal/ui"
+	"github.com/mkoepf/cccc/internal/claude"
+	"github.com/mkoepf/cccc/internal/ui"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

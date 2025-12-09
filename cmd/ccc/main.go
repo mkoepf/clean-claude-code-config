@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mhk/ccc/internal/claude"
-	"github.com/mhk/ccc/internal/cleaner"
-	"github.com/mhk/ccc/internal/ui"
+	"github.com/mkoepf/cccc/internal/claude"
+	"github.com/mkoepf/cccc/internal/cleaner"
+	"github.com/mkoepf/cccc/internal/ui"
 )
 
 // Args represents parsed command-line arguments.

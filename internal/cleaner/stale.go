@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mhk/ccc/internal/claude"
-	"github.com/mhk/ccc/internal/ui"
+	"github.com/mkoepf/cccc/internal/claude"
+	"github.com/mkoepf/cccc/internal/ui"
 )
 
 // StaleResult represents the result of cleaning a stale project.

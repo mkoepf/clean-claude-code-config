@@ -1,4 +1,4 @@
-module github.com/mhk/ccc
+module github.com/mkoepf/cccc
 
 go 1.25.5
 
