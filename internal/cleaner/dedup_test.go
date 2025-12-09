@@ -381,6 +381,68 @@ func TestDedupResult_FormatAuditDetails(t *testing.T) {
 	}
 }
 
+func TestApplyDedup_RemoveLastEntry(t *testing.T) {
+	// This test verifies that removing the last entry in an array
+	// produces valid JSON (no trailing comma issue)
+	tmpDir := t.TempDir()
+	settingsPath := filepath.Join(tmpDir, "settings.json")
+
+	// The duplicate "Bash(npm:*)" is the LAST entry in the allow array
+	content := `{"permissions":{"allow":["Bash(git:*)","Bash(npm:*)"],"deny":["Bash(rm:*)"]}}`
+	require.NoError(t, os.WriteFile(settingsPath, []byte(content), 0644))
+
+	result := &DedupResult{
+		LocalPath:      settingsPath,
+		DuplicateAllow: []string{"Bash(npm:*)"}, // Remove the last entry
+		SuggestDelete:  false,
+	}
+
+	err := ApplyDedup(result, false)
+	require.NoError(t, err)
+
+	// Read raw file content to verify valid JSON structure
+	rawData, err := os.ReadFile(settingsPath)
+	require.NoError(t, err)
+
+	// The JSON should be valid (Go's json.MarshalIndent handles this)
+	// Verify it can be parsed back
+	settings, err := claude.LoadSettings(settingsPath)
+	require.NoError(t, err, "JSON should be valid after removing last entry")
+
+	assert.Equal(t, []string{"Bash(git:*)"}, settings.Permissions.Allow)
+	assert.Equal(t, []string{"Bash(rm:*)"}, settings.Permissions.Deny)
+
+	// Also verify there's no trailing comma in the raw JSON
+	assert.NotContains(t, string(rawData), ",\n    ]", "Should not have trailing comma in array")
+	assert.NotContains(t, string(rawData), ",]", "Should not have trailing comma in array")
+}
+
+func TestApplyDedup_RemoveOnlyEntry(t *testing.T) {
+	// Test removing the only entry in an array (edge case)
+	tmpDir := t.TempDir()
+	settingsPath := filepath.Join(tmpDir, "settings.json")
+
+	content := `{"permissions":{"allow":["Bash(git:*)"],"deny":["Bash(rm:*)"]}}`
+	require.NoError(t, os.WriteFile(settingsPath, []byte(content), 0644))
+
+	result := &DedupResult{
+		LocalPath:      settingsPath,
+		DuplicateAllow: []string{"Bash(git:*)"}, // Remove the only entry
+		SuggestDelete:  false,
+	}
+
+	err := ApplyDedup(result, false)
+	require.NoError(t, err)
+
+	// Verify the JSON is still valid
+	settings, err := claude.LoadSettings(settingsPath)
+	require.NoError(t, err, "JSON should be valid after removing only entry")
+
+	// Allow should now be empty (nil or empty slice)
+	assert.Empty(t, settings.Permissions.Allow)
+	assert.Equal(t, []string{"Bash(rm:*)"}, settings.Permissions.Deny)
+}
+
 func TestBuildDedupPreview_Verbose(t *testing.T) {
 	globalPath := "/home/user/.claude/settings.json"
 	results := []DedupResult{
