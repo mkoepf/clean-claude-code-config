@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/mhk/ccc/internal/claude"
@@ -328,8 +329,9 @@ func cleanConfig(args *Args, paths *claude.Paths, stdin io.Reader, stdout, stder
 	}
 
 	// Find local configs only in known project directories (fast)
-	// Exclude the global settings file to prevent it from being flagged as duplicate
-	localConfigs := cleaner.FindLocalConfigsFromProjects(projectPaths, paths.Settings)
+	// Exclude ~/.claude/settings.local.json (if home dir is a project, it shouldn't be treated as a local config)
+	homeLocalSettings := filepath.Join(paths.Root, "settings.local.json")
+	localConfigs := cleaner.FindLocalConfigsFromProjects(projectPaths, homeLocalSettings)
 
 	if len(localConfigs) == 0 {
 		fmt.Fprintln(stdout, "No local configs found.")

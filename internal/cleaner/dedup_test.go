@@ -14,11 +14,11 @@ import (
 func TestFindLocalConfigs_SingleConfig(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	// Create a project with .claude/settings.json
+	// Create a project with .claude/settings.local.json
 	projectDir := filepath.Join(tmpDir, "myproject")
 	claudeDir := filepath.Join(projectDir, ".claude")
 	require.NoError(t, os.MkdirAll(claudeDir, 0755))
-	settingsPath := filepath.Join(claudeDir, "settings.json")
+	settingsPath := filepath.Join(claudeDir, "settings.local.json")
 	require.NoError(t, os.WriteFile(settingsPath, []byte(`{"permissions":{}}`), 0644))
 
 	configs, err := FindLocalConfigs(tmpDir, "")
@@ -31,11 +31,11 @@ func TestFindLocalConfigs_SingleConfig(t *testing.T) {
 func TestFindLocalConfigs_MultipleConfigs(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	// Create multiple projects with .claude/settings.json
+	// Create multiple projects with .claude/settings.local.json
 	for _, name := range []string{"project1", "project2", "project3"} {
 		claudeDir := filepath.Join(tmpDir, name, ".claude")
 		require.NoError(t, os.MkdirAll(claudeDir, 0755))
-		require.NoError(t, os.WriteFile(filepath.Join(claudeDir, "settings.json"), []byte(`{}`), 0644))
+		require.NoError(t, os.WriteFile(filepath.Join(claudeDir, "settings.local.json"), []byte(`{}`), 0644))
 	}
 
 	configs, err := FindLocalConfigs(tmpDir, "")
@@ -47,9 +47,9 @@ func TestFindLocalConfigs_MultipleConfigs(t *testing.T) {
 func TestFindLocalConfigs_NoConfigs(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	// Create directories without .claude/settings.json
+	// Create directories without .claude/settings.local.json
 	require.NoError(t, os.MkdirAll(filepath.Join(tmpDir, "project1"), 0755))
-	require.NoError(t, os.MkdirAll(filepath.Join(tmpDir, "project2", ".claude"), 0755)) // .claude but no settings.json
+	require.NoError(t, os.MkdirAll(filepath.Join(tmpDir, "project2", ".claude"), 0755)) // .claude but no settings.local.json
 
 	configs, err := FindLocalConfigs(tmpDir, "")
 	require.NoError(t, err)
@@ -63,7 +63,7 @@ func TestFindLocalConfigs_NestedProjects(t *testing.T) {
 	// Create nested project structure
 	nestedPath := filepath.Join(tmpDir, "parent", "child", ".claude")
 	require.NoError(t, os.MkdirAll(nestedPath, 0755))
-	require.NoError(t, os.WriteFile(filepath.Join(nestedPath, "settings.json"), []byte(`{}`), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(nestedPath, "settings.local.json"), []byte(`{}`), 0644))
 
 	configs, err := FindLocalConfigs(tmpDir, "")
 	require.NoError(t, err)
@@ -80,22 +80,22 @@ func TestFindLocalConfigs_NonexistentDir(t *testing.T) {
 func TestFindLocalConfigs_ExcludesGlobalConfig(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	// Create global config at ~/.claude/settings.json (should be excluded)
+	// Create home dir with settings.local.json (should be excluded)
 	globalClaudeDir := filepath.Join(tmpDir, ".claude")
 	require.NoError(t, os.MkdirAll(globalClaudeDir, 0755))
-	globalSettings := filepath.Join(globalClaudeDir, "settings.json")
-	require.NoError(t, os.WriteFile(globalSettings, []byte(`{"permissions":{}}`), 0644))
+	homeLocalSettings := filepath.Join(globalClaudeDir, "settings.local.json")
+	require.NoError(t, os.WriteFile(homeLocalSettings, []byte(`{"permissions":{}}`), 0644))
 
 	// Create a project with local config (should be found)
 	projectDir := filepath.Join(tmpDir, "myproject", ".claude")
 	require.NoError(t, os.MkdirAll(projectDir, 0755))
-	localSettings := filepath.Join(projectDir, "settings.json")
+	localSettings := filepath.Join(projectDir, "settings.local.json")
 	require.NoError(t, os.WriteFile(localSettings, []byte(`{"permissions":{}}`), 0644))
 
-	configs, err := FindLocalConfigs(tmpDir, globalSettings)
+	configs, err := FindLocalConfigs(tmpDir, homeLocalSettings)
 	require.NoError(t, err)
 
-	// Should only find the project config, not the global one
+	// Should only find the project config, not the home dir's local config
 	assert.Len(t, configs, 1)
 	assert.Equal(t, localSettings, configs[0])
 }
@@ -104,6 +104,7 @@ func TestFindLocalConfigsFromProjects_Fast(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	// Create project directories with local configs
+	// Note: Local configs are named settings.local.json, not settings.json
 	project1 := filepath.Join(tmpDir, "project1")
 	project2 := filepath.Join(tmpDir, "project2")
 	project3 := filepath.Join(tmpDir, "project3") // No config
@@ -112,16 +113,16 @@ func TestFindLocalConfigsFromProjects_Fast(t *testing.T) {
 	require.NoError(t, os.MkdirAll(filepath.Join(project2, ".claude"), 0755))
 	require.NoError(t, os.MkdirAll(project3, 0755))
 
-	require.NoError(t, os.WriteFile(filepath.Join(project1, ".claude", "settings.json"), []byte(`{}`), 0644))
-	require.NoError(t, os.WriteFile(filepath.Join(project2, ".claude", "settings.json"), []byte(`{}`), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(project1, ".claude", "settings.local.json"), []byte(`{}`), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(project2, ".claude", "settings.local.json"), []byte(`{}`), 0644))
 
 	// Test the fast method that only checks specific project directories
 	projectPaths := []string{project1, project2, project3, "/nonexistent/path"}
 	configs := FindLocalConfigsFromProjects(projectPaths, "")
 
 	assert.Len(t, configs, 2)
-	assert.Contains(t, configs, filepath.Join(project1, ".claude", "settings.json"))
-	assert.Contains(t, configs, filepath.Join(project2, ".claude", "settings.json"))
+	assert.Contains(t, configs, filepath.Join(project1, ".claude", "settings.local.json"))
+	assert.Contains(t, configs, filepath.Join(project2, ".claude", "settings.local.json"))
 }
 
 func TestFindLocalConfigsFromProjects_ExcludesGlobalConfig(t *testing.T) {
@@ -132,21 +133,26 @@ func TestFindLocalConfigsFromProjects_ExcludesGlobalConfig(t *testing.T) {
 	homeDir := tmpDir
 	globalClaudeDir := filepath.Join(homeDir, ".claude")
 	require.NoError(t, os.MkdirAll(globalClaudeDir, 0755))
+	// Global config is settings.json
 	globalSettings := filepath.Join(globalClaudeDir, "settings.json")
 	require.NoError(t, os.WriteFile(globalSettings, []byte(`{}`), 0644))
+	// Home dir might also have a settings.local.json (should be excluded too)
+	homeLocalSettings := filepath.Join(globalClaudeDir, "settings.local.json")
+	require.NoError(t, os.WriteFile(homeLocalSettings, []byte(`{}`), 0644))
 
 	// Create a normal project with local config
 	projectDir := filepath.Join(tmpDir, "myproject")
 	projectClaudeDir := filepath.Join(projectDir, ".claude")
 	require.NoError(t, os.MkdirAll(projectClaudeDir, 0755))
-	localSettings := filepath.Join(projectClaudeDir, "settings.json")
+	localSettings := filepath.Join(projectClaudeDir, "settings.local.json")
 	require.NoError(t, os.WriteFile(localSettings, []byte(`{}`), 0644))
 
 	// Both home dir and project dir are in project paths
+	// Exclude the home directory's local settings (it's tied to global)
 	projectPaths := []string{homeDir, projectDir}
-	configs := FindLocalConfigsFromProjects(projectPaths, globalSettings)
+	configs := FindLocalConfigsFromProjects(projectPaths, homeLocalSettings)
 
-	// Should only find the project config, not the global one
+	// Should only find the project config, not the home dir's local config
 	assert.Len(t, configs, 1)
 	assert.Equal(t, localSettings, configs[0])
 }

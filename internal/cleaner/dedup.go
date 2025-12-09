@@ -32,8 +32,8 @@ func (r *DedupResult) TotalDuplicates() int {
 	return len(r.DuplicateAllow) + len(r.DuplicateDeny) + len(r.DuplicateAsk)
 }
 
-// FindLocalConfigs searches for local .claude/settings.json files under the given path.
-// It excludes the global config file specified by excludePath.
+// FindLocalConfigs searches for local .claude/settings.local.json files under the given path.
+// It excludes the config file specified by excludePath.
 // Note: This function walks the entire directory tree which can be slow.
 // Consider using FindLocalConfigsFromProjects for better performance.
 func FindLocalConfigs(searchPath string, excludePath string) ([]string, error) {
@@ -57,10 +57,10 @@ func FindLocalConfigs(searchPath string, excludePath string) ([]string, error) {
 			return nil
 		}
 
-		// Check if this is a .claude/settings.json file
+		// Check if this is a .claude/settings.local.json file
 		dir := filepath.Dir(path)
-		if filepath.Base(dir) == ".claude" && filepath.Base(path) == "settings.json" {
-			// Exclude the global config
+		if filepath.Base(dir) == ".claude" && filepath.Base(path) == "settings.local.json" {
+			// Exclude the specified path
 			cleanPath := filepath.Clean(path)
 			if excludePath != "" && cleanPath == excludePath {
 				return nil
@@ -78,10 +78,13 @@ func FindLocalConfigs(searchPath string, excludePath string) ([]string, error) {
 	return configs, nil
 }
 
-// FindLocalConfigsFromProjects efficiently finds local .claude/settings.json files
+// FindLocalConfigsFromProjects efficiently finds local .claude/settings.local.json files
 // by only checking the specific project directories provided.
-// It excludes the global config file specified by excludePath.
+// It excludes the config file specified by excludePath (typically ~/.claude/settings.local.json).
 // This is much faster than walking the entire home directory.
+//
+// Note: Local project configs are named "settings.local.json", not "settings.json".
+// The global config at ~/.claude/settings.json is a different file.
 func FindLocalConfigsFromProjects(projectPaths []string, excludePath string) []string {
 	var configs []string
 
@@ -91,9 +94,10 @@ func FindLocalConfigsFromProjects(projectPaths []string, excludePath string) []s
 	}
 
 	for _, projectPath := range projectPaths {
-		settingsPath := filepath.Join(projectPath, ".claude", "settings.json")
+		// Local configs are named settings.local.json
+		settingsPath := filepath.Join(projectPath, ".claude", "settings.local.json")
 		if _, err := os.Stat(settingsPath); err == nil {
-			// Exclude the global config
+			// Exclude the specified path (e.g., ~/.claude/settings.local.json)
 			cleanPath := filepath.Clean(settingsPath)
 			if excludePath != "" && cleanPath == excludePath {
 				continue

@@ -399,16 +399,17 @@ func TestRunCLI_CleanConfigVerboseDryRun(t *testing.T) {
 	projectsDir := filepath.Join(claudeDir, "projects")
 	require.NoError(t, os.MkdirAll(projectsDir, 0755))
 
-	// Create global settings with some permissions
+	// Create global settings with some permissions (settings.json is the global config)
 	globalSettings := `{"permissions":{"allow":["Bash(git:*)","Read(**)"],"deny":["Bash(rm -rf:*)"]}}`
 	require.NoError(t, os.WriteFile(filepath.Join(claudeDir, "settings.json"), []byte(globalSettings), 0644))
 
 	// Create a project directory with local settings that duplicate global
+	// Note: Local configs are named settings.local.json
 	projectDir := filepath.Join(tmpDir, "myproject")
 	projectClaudeDir := filepath.Join(projectDir, ".claude")
 	require.NoError(t, os.MkdirAll(projectClaudeDir, 0755))
 	localSettings := `{"permissions":{"allow":["Bash(git:*)","Bash(npm:*)"],"deny":["Bash(rm -rf:*)"]}}`
-	require.NoError(t, os.WriteFile(filepath.Join(projectClaudeDir, "settings.json"), []byte(localSettings), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(projectClaudeDir, "settings.local.json"), []byte(localSettings), 0644))
 
 	// Register this project in ~/.claude/projects/ so ScanProjects can find it
 	encodedProjectDir := filepath.Join(projectsDir, "-myproject")
