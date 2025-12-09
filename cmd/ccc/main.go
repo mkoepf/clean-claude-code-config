@@ -111,10 +111,11 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "A CLI utility to clean up Claude Code configuration.")
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "Usage:")
-	fmt.Fprintln(w, "  ccc clean [--dry-run] [--yes]      Clean all: stale projects, orphans, config duplicates")
+	fmt.Fprintln(w, "  ccc clean                          Clean all (default: projects + orphans + config)")
 	fmt.Fprintln(w, "  ccc clean projects [--dry-run]     Remove stale project session data")
 	fmt.Fprintln(w, "  ccc clean orphans [--dry-run]      Remove orphaned data")
 	fmt.Fprintln(w, "  ccc clean config [--dry-run]       Deduplicate local configs against global settings")
+	fmt.Fprintln(w, "  ccc list                           List projects (default)")
 	fmt.Fprintln(w, "  ccc list projects [--stale-only]   List all projects with their status")
 	fmt.Fprintln(w, "  ccc list orphans                   List orphaned data without removing")
 	fmt.Fprintln(w, "  ccc list config [--verbose]        List duplicate config entries without removing")
@@ -123,7 +124,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  --dry-run      Show what would be cleaned without making changes")
 	fmt.Fprintln(w, "  --yes, -y      Skip confirmation prompts")
 	fmt.Fprintln(w, "  --verbose, -v  Show detailed output (e.g., list duplicate entries)")
-	fmt.Fprintln(w, "  --stale-only   Show only stale projects (with list command)")
+	fmt.Fprintln(w, "  --stale-only   Show only stale projects (with list projects)")
 	fmt.Fprintln(w, "  --help, -h     Show this help message")
 }
 

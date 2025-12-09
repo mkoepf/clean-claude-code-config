@@ -19,10 +19,11 @@ A CLI utility to clean up Claude Code configuration by:
 ## Usage
 
 ```bash
-ccc clean [--dry-run] [--yes]      # Clean all: stale projects, orphans, config duplicates
+ccc clean                          # Clean all (default: projects + orphans + config)
 ccc clean projects [--dry-run]     # Remove stale project session data
 ccc clean orphans [--dry-run]      # Remove orphaned data
 ccc clean config [--dry-run]       # Deduplicate local configs against global settings
+ccc list                           # List projects (default)
 ccc list projects [--stale-only]   # List all projects with their status
 ccc list orphans                   # List orphaned data without removing
 ccc list config [--verbose]        # List duplicate config entries without removing
