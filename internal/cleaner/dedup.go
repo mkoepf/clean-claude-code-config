@@ -80,13 +80,24 @@ func FindLocalConfigs(searchPath string, excludePath string) ([]string, error) {
 
 // FindLocalConfigsFromProjects efficiently finds local .claude/settings.json files
 // by only checking the specific project directories provided.
+// It excludes the global config file specified by excludePath.
 // This is much faster than walking the entire home directory.
-func FindLocalConfigsFromProjects(projectPaths []string) []string {
+func FindLocalConfigsFromProjects(projectPaths []string, excludePath string) []string {
 	var configs []string
+
+	// Normalize exclude path for comparison
+	if excludePath != "" {
+		excludePath = filepath.Clean(excludePath)
+	}
 
 	for _, projectPath := range projectPaths {
 		settingsPath := filepath.Join(projectPath, ".claude", "settings.json")
 		if _, err := os.Stat(settingsPath); err == nil {
+			// Exclude the global config
+			cleanPath := filepath.Clean(settingsPath)
+			if excludePath != "" && cleanPath == excludePath {
+				continue
+			}
 			configs = append(configs, settingsPath)
 		}
 	}

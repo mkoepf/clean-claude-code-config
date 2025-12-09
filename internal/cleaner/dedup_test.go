@@ -117,11 +117,38 @@ func TestFindLocalConfigsFromProjects_Fast(t *testing.T) {
 
 	// Test the fast method that only checks specific project directories
 	projectPaths := []string{project1, project2, project3, "/nonexistent/path"}
-	configs := FindLocalConfigsFromProjects(projectPaths)
+	configs := FindLocalConfigsFromProjects(projectPaths, "")
 
 	assert.Len(t, configs, 2)
 	assert.Contains(t, configs, filepath.Join(project1, ".claude", "settings.json"))
 	assert.Contains(t, configs, filepath.Join(project2, ".claude", "settings.json"))
+}
+
+func TestFindLocalConfigsFromProjects_ExcludesGlobalConfig(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	// Simulate home directory being registered as a project
+	// This happens when user runs Claude Code from their home directory
+	homeDir := tmpDir
+	globalClaudeDir := filepath.Join(homeDir, ".claude")
+	require.NoError(t, os.MkdirAll(globalClaudeDir, 0755))
+	globalSettings := filepath.Join(globalClaudeDir, "settings.json")
+	require.NoError(t, os.WriteFile(globalSettings, []byte(`{}`), 0644))
+
+	// Create a normal project with local config
+	projectDir := filepath.Join(tmpDir, "myproject")
+	projectClaudeDir := filepath.Join(projectDir, ".claude")
+	require.NoError(t, os.MkdirAll(projectClaudeDir, 0755))
+	localSettings := filepath.Join(projectClaudeDir, "settings.json")
+	require.NoError(t, os.WriteFile(localSettings, []byte(`{}`), 0644))
+
+	// Both home dir and project dir are in project paths
+	projectPaths := []string{homeDir, projectDir}
+	configs := FindLocalConfigsFromProjects(projectPaths, globalSettings)
+
+	// Should only find the project config, not the global one
+	assert.Len(t, configs, 1)
+	assert.Equal(t, localSettings, configs[0])
 }
 
 func TestDeduplicateConfig_AllDuplicate(t *testing.T) {

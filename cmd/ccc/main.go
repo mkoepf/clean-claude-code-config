@@ -328,7 +328,8 @@ func cleanConfig(args *Args, paths *claude.Paths, stdin io.Reader, stdout, stder
 	}
 
 	// Find local configs only in known project directories (fast)
-	localConfigs := cleaner.FindLocalConfigsFromProjects(projectPaths)
+	// Exclude the global settings file to prevent it from being flagged as duplicate
+	localConfigs := cleaner.FindLocalConfigsFromProjects(projectPaths, paths.Settings)
 
 	if len(localConfigs) == 0 {
 		fmt.Fprintln(stdout, "No local configs found.")
