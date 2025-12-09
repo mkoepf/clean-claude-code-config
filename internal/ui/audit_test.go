@@ -142,7 +142,7 @@ func TestAuditLogger_FormatsSizesCorrectly(t *testing.T) {
 
 func TestDefaultAuditLogPath(t *testing.T) {
 	path := DefaultAuditLogPath("/home/user/.claude")
-	assert.Equal(t, "/home/user/.claude/ccc-audit.log", path)
+	assert.Equal(t, "/home/user/.claude/cccc-audit.log", path)
 }
 
 func TestAuditLogger_Close(t *testing.T) {

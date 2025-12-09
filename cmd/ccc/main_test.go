@@ -147,7 +147,7 @@ func TestRunCLI_Help(t *testing.T) {
 	code := runCLI([]string{}, stdin, &stdout, &stderr)
 
 	assert.Equal(t, 0, code)
-	assert.Contains(t, stdout.String(), "ccc - CleanClaudeConfig")
+	assert.Contains(t, stdout.String(), "cccc - Clean Claude Code Config")
 	assert.Contains(t, stdout.String(), "Usage:")
 }
 
@@ -158,7 +158,7 @@ func TestRunCLI_HelpFlag(t *testing.T) {
 	code := runCLI([]string{"--help"}, stdin, &stdout, &stderr)
 
 	assert.Equal(t, 0, code)
-	assert.Contains(t, stdout.String(), "ccc - CleanClaudeConfig")
+	assert.Contains(t, stdout.String(), "cccc - Clean Claude Code Config")
 }
 
 func TestRunCLI_UnknownCommand(t *testing.T) {

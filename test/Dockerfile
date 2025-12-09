@@ -1,4 +1,4 @@
-# E2E test environment for ccc
+# E2E test environment for cccc
 FROM golang:1.25.5-alpine
 
 # Install bash for test scripts
@@ -25,11 +25,11 @@ COPY --chown=testuser:testuser . /app
 WORKDIR /app
 
 # Build the binary
-RUN go build -o ccc ./cmd/ccc
+RUN go build -o cccc ./cmd/ccc
 
 # Add healthcheck (required by security scanners)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["./ccc", "--help"]
+    CMD ["./cccc", "--help"]
 
 # Run E2E tests
 ENTRYPOINT ["go", "test", "-v", "-tags=e2e", "./test/e2e/..."]

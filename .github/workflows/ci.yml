@@ -100,7 +100,7 @@ jobs:
         with:
           auth: ${{ secrets.GIST_TOKEN }}
           gistID: ${{ vars.COVERAGE_GIST_ID }}
-          filename: ccc-coverage.json
+          filename: cccc-coverage.json
           label: coverage
           message: ${{ steps.coverage.outputs.coverage }}%
           valColorRange: ${{ steps.coverage.outputs.coverage }}
@@ -138,10 +138,10 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Build Docker image
-        run: docker build -t ccc-test -f test/Dockerfile .
+        run: docker build -t cccc-test -f test/Dockerfile .
 
       - name: Run E2E tests
-        run: docker run --rm ccc-test
+        run: docker run --rm cccc-test
 
   security:
     name: Security Scan
@@ -190,14 +190,14 @@ jobs:
           cache: true
 
       - name: Build
-        run: go build -v -o ccc ./cmd/ccc
+        run: go build -v -o cccc ./cmd/ccc
 
       - name: Verify binary
-        run: ./ccc --help
+        run: ./cccc --help
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v5
         with:
-          name: ccc-${{ runner.os }}
-          path: ccc
+          name: cccc-${{ runner.os }}
+          path: cccc
           retention-days: 7

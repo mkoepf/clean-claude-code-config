@@ -16,9 +16,9 @@ func getClaudeHome() string {
 	return filepath.Join(home, ".claude")
 }
 
-// getCCCBinary returns the path to the ccc binary.
+// getCCCBinary returns the path to the cccc binary.
 func getCCCBinary() string {
-	return "/app/ccc"
+	return "/app/cccc"
 }
 
 // TestE2E_ListProjects verifies that list command works correctly.
@@ -176,7 +176,7 @@ func TestE2E_CleanProjects(t *testing.T) {
 	}
 
 	// Verify audit log was written
-	auditLog := filepath.Join(claudeHome, "ccc-audit.log")
+	auditLog := filepath.Join(claudeHome, "cccc-audit.log")
 	if _, err := os.Stat(auditLog); os.IsNotExist(err) {
 		t.Errorf("audit log should be created: %s", auditLog)
 	}
@@ -217,8 +217,8 @@ func TestE2E_Help(t *testing.T) {
 	outputStr := string(output)
 
 	// Should show usage info
-	if !strings.Contains(outputStr, "ccc") {
-		t.Errorf("expected 'ccc' in help output, got: %s", outputStr)
+	if !strings.Contains(outputStr, "cccc") {
+		t.Errorf("expected 'cccc' in help output, got: %s", outputStr)
 	}
 
 	if !strings.Contains(outputStr, "clean") {

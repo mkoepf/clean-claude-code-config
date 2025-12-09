@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# code_quality.sh - Run all code quality checks for ccc
+# code_quality.sh - Run all code quality checks for cccc
 #
 # This script runs the same checks that are executed in the GitHub Actions CI workflow.
 # Run this before committing to catch issues early.
@@ -21,7 +21,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
 echo -e "${BLUE}================================================${NC}"
-echo -e "${BLUE}Running Code Quality Checks (ccc)${NC}"
+echo -e "${BLUE}Running Code Quality Checks (cccc)${NC}"
 echo -e "${BLUE}================================================${NC}"
 echo ""
 
@@ -45,18 +45,18 @@ echo ""
 # 2. Build Check
 ###########################################
 echo -e "${BLUE}[2/7] Building binary...${NC}"
-if go build -v -o ccc ./cmd/ccc 2>&1 > /dev/null; then
+if go build -v -o cccc ./cmd/ccc 2>&1 > /dev/null; then
     echo -e "${GREEN}✓ Build successful${NC}"
 
     # Verify binary works
-    if ./ccc --help > /dev/null 2>&1; then
+    if ./cccc --help > /dev/null 2>&1; then
         echo -e "${GREEN}✓ Binary verification successful${NC}"
     else
         echo -e "${YELLOW}⚠ Binary runs but --help returned non-zero (expected during development)${NC}"
     fi
 
     # Clean up
-    rm -f ccc
+    rm -f cccc
 else
     echo -e "${RED}✗ Build failed${NC}"
     exit 1

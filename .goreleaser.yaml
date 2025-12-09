@@ -1,16 +1,16 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
 version: 2
 
-project_name: ccc
+project_name: cccc
 
 before:
   hooks:
     - go mod tidy
 
 builds:
-  - id: ccc
+  - id: cccc
     main: ./cmd/ccc
-    binary: ccc
+    binary: cccc
     env:
       - CGO_ENABLED=0
     goos:
@@ -52,7 +52,7 @@ changelog:
 release:
   github:
     owner: mkoepf
-    name: ccc
+    name: clean-claude-code-config
   draft: false
   prerelease: auto
   name_template: "{{.ProjectName}} v{{.Version}}"
@@ -62,10 +62,10 @@ brews:
       owner: mkoepf
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    homepage: "https://github.com/mkoepf/ccc"
+    homepage: "https://github.com/mkoepf/clean-claude-code-config"
     description: "CLI tool for cleaning up Claude Code configuration"
     license: "MIT"
     install: |
-      bin.install "ccc"
+      bin.install "cccc"
     test: |
-      system "#{bin}/ccc", "--help"
+      system "#{bin}/cccc", "--help"

@@ -1,8 +1,8 @@
-# CleanClaudeConfig (ccc)
+# cccc - Clean Claude Code Config
 
-[![CI](https://github.com/mkoepf/ccc/actions/workflows/ci.yml/badge.svg)](https://github.com/mkoepf/ccc/actions/workflows/ci.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/mkoepf/ccc)](https://goreportcard.com/report/github.com/mkoepf/ccc)
-[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/mkoepf/GIST_ID/raw/ccc-coverage.json)](https://github.com/mkoepf/ccc/actions/workflows/ci.yml)
+[![CI](https://github.com/mkoepf/clean-claude-code-config/actions/workflows/ci.yml/badge.svg)](https://github.com/mkoepf/clean-claude-code-config/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mkoepf/clean-claude-code-config)](https://goreportcard.com/report/github.com/mkoepf/clean-claude-code-config)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/mkoepf/GIST_ID/raw/cccc-coverage.json)](https://github.com/mkoepf/clean-claude-code-config/actions/workflows/ci.yml)
 
 A CLI utility to clean up Claude Code configuration by:
 
@@ -14,19 +14,19 @@ A CLI utility to clean up Claude Code configuration by:
 
 - **Safe by default** - all destructive operations preview first and require explicit confirmation
 - **Dry-run support** - see what would be cleaned without making changes
-- **Audit logging** - all deletions are logged to `~/.claude/ccc-audit.log`
+- **Audit logging** - all deletions are logged to `~/.claude/cccc-audit.log`
 
 ## Usage
 
 ```bash
-ccc clean                          # Clean all (default: projects + orphans + config)
-ccc clean projects [--dry-run]     # Remove stale project session data
-ccc clean orphans [--dry-run]      # Remove orphaned data
-ccc clean config [--dry-run]       # Deduplicate local configs against global settings
-ccc list                           # List projects (default)
-ccc list projects [--stale-only]   # List all projects with their status
-ccc list orphans                   # List orphaned data without removing
-ccc list config [--verbose]        # List duplicate config entries without removing
+cccc clean                          # Clean all (default: projects + orphans + config)
+cccc clean projects [--dry-run]     # Remove stale project session data
+cccc clean orphans [--dry-run]      # Remove orphaned data
+cccc clean config [--dry-run]       # Deduplicate local configs against global settings
+cccc list                           # List projects (default)
+cccc list projects [--stale-only]   # List all projects with their status
+cccc list orphans                   # List orphaned data without removing
+cccc list config [--verbose]        # List duplicate config entries without removing
 ```
 
 ## Development & Testing
@@ -45,7 +45,7 @@ make help          # Show all available targets
 # Or run directly
 go test ./...                                    # Unit tests
 go test -v -tags=safety ./test/safety/...        # Safety tests
-docker build -t ccc-test -f test/Dockerfile . && docker run --rm ccc-test  # E2E tests
+docker build -t cccc-test -f test/Dockerfile . && docker run --rm cccc-test  # E2E tests
 ./scripts/code_quality.sh                        # Full code quality checks
 ```
 

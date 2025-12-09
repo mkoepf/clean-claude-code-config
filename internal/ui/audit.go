@@ -73,5 +73,5 @@ func (l *AuditLogger) Close() error {
 
 // DefaultAuditLogPath returns the default audit log path for a given Claude home directory.
 func DefaultAuditLogPath(claudeHome string) string {
-	return filepath.Join(claudeHome, "ccc-audit.log")
+	return filepath.Join(claudeHome, "cccc-audit.log")
 }

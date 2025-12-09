@@ -5,7 +5,7 @@ all: build
 
 # Build the binary
 build:
-	go build -o ccc ./cmd/ccc
+	go build -o cccc ./cmd/ccc
 
 # Run unit tests
 test: test-unit
@@ -19,8 +19,8 @@ test-safety:
 
 # Run E2E tests in Docker
 test-e2e:
-	docker build -t ccc-test -f test/Dockerfile .
-	docker run --rm ccc-test
+	docker build -t cccc-test -f test/Dockerfile .
+	docker run --rm cccc-test
 
 # Run all tests
 test-all: test-unit test-safety
@@ -32,17 +32,17 @@ quality:
 
 # Clean build artifacts
 clean:
-	rm -f ccc
+	rm -f cccc
 	go clean
 
 # Install the binary
 install: build
-	cp ccc $(GOPATH)/bin/ 2>/dev/null || cp ccc ~/go/bin/
+	cp cccc $(GOPATH)/bin/ 2>/dev/null || cp cccc ~/go/bin/
 
 # Show help
 help:
 	@echo "Available targets:"
-	@echo "  build       - Build the ccc binary"
+	@echo "  build       - Build the cccc binary"
 	@echo "  test        - Run unit tests (alias for test-unit)"
 	@echo "  test-unit   - Run unit tests"
 	@echo "  test-safety - Run safety tests"
