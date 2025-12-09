@@ -12,6 +12,9 @@ import (
 	"github.com/mkoepf/claude-code-config-cleaner/internal/ui"
 )
 
+// Version is set at build time via ldflags.
+var Version = "dev"
+
 // Args represents parsed command-line arguments.
 type Args struct {
 	Command    string // "clean", "list", ""
@@ -21,6 +24,7 @@ type Args struct {
 	StaleOnly  bool
 	Verbose    bool
 	Help       bool
+	Version    bool
 }
 
 func main() {
@@ -34,6 +38,11 @@ func runCLI(osArgs []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if err != nil {
 		fmt.Fprintln(stderr, "Error:", err)
 		return 1
+	}
+
+	if args.Version {
+		fmt.Fprintf(stdout, "cccc version %s\n", Version)
+		return 0
 	}
 
 	if args.Help {
@@ -76,6 +85,9 @@ func parseArgs(osArgs []string) (*Args, error) {
 		case "-h", "--help", "help":
 			args.Help = true
 			return args, nil
+		case "--version":
+			args.Version = true
+			return args, nil
 		case "--dry-run":
 			args.DryRun = true
 		case "-y", "--yes":
@@ -106,7 +118,7 @@ func parseArgs(osArgs []string) (*Args, error) {
 
 // printHelp prints the usage information.
 func printHelp(w io.Writer) {
-	fmt.Fprintln(w, "cccc - Clean Claude Code Config")
+	fmt.Fprintf(w, "cccc version %s\n", Version)
 	fmt.Fprintln(w, "")
 	fmt.Fprintln(w, "A CLI utility to clean up Claude Code configuration.")
 	fmt.Fprintln(w, "")
@@ -126,6 +138,7 @@ func printHelp(w io.Writer) {
 	fmt.Fprintln(w, "  --verbose, -v  Show detailed output (e.g., list duplicate entries)")
 	fmt.Fprintln(w, "  --stale-only   Show only stale projects (with list projects)")
 	fmt.Fprintln(w, "  --help, -h     Show this help message")
+	fmt.Fprintln(w, "  --version      Show version information")
 }
 
 // handleClean handles the "clean" command and subcommands.

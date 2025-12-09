@@ -38,6 +38,32 @@ func TestParseArgs_NoArgs(t *testing.T) {
 	assert.True(t, args.Help)
 }
 
+func TestParseArgs_VersionFlag(t *testing.T) {
+	args, err := parseArgs([]string{"--version"})
+	require.NoError(t, err)
+	assert.True(t, args.Version)
+}
+
+func TestRunCLI_VersionFlag(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	stdin := strings.NewReader("")
+
+	code := runCLI([]string{"--version"}, stdin, &stdout, &stderr)
+
+	assert.Equal(t, 0, code)
+	assert.Contains(t, stdout.String(), "cccc version")
+}
+
+func TestRunCLI_HelpShowsVersion(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	stdin := strings.NewReader("")
+
+	code := runCLI([]string{"--help"}, stdin, &stdout, &stderr)
+
+	assert.Equal(t, 0, code)
+	assert.Contains(t, stdout.String(), "cccc version")
+}
+
 func TestParseArgs_Help(t *testing.T) {
 	for _, arg := range []string{"-h", "--help", "help"} {
 		args, err := parseArgs([]string{arg})
@@ -147,7 +173,7 @@ func TestRunCLI_Help(t *testing.T) {
 	code := runCLI([]string{}, stdin, &stdout, &stderr)
 
 	assert.Equal(t, 0, code)
-	assert.Contains(t, stdout.String(), "cccc - Clean Claude Code Config")
+	assert.Contains(t, stdout.String(), "cccc version")
 	assert.Contains(t, stdout.String(), "Usage:")
 }
 
@@ -158,7 +184,7 @@ func TestRunCLI_HelpFlag(t *testing.T) {
 	code := runCLI([]string{"--help"}, stdin, &stdout, &stderr)
 
 	assert.Equal(t, 0, code)
-	assert.Contains(t, stdout.String(), "cccc - Clean Claude Code Config")
+	assert.Contains(t, stdout.String(), "cccc version")
 }
 
 func TestRunCLI_UnknownCommand(t *testing.T) {
