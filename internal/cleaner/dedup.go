@@ -32,6 +32,30 @@ func (r *DedupResult) TotalDuplicates() int {
 	return len(r.DuplicateAllow) + len(r.DuplicateDeny) + len(r.DuplicateAsk)
 }
 
+// FormatAuditDetails returns a human-readable description of the changes made.
+func (r *DedupResult) FormatAuditDetails() string {
+	if r.SuggestDelete {
+		return "deleted (all entries were duplicates)"
+	}
+
+	if !r.HasDuplicates() {
+		return "no changes"
+	}
+
+	var parts []string
+	if len(r.DuplicateAllow) > 0 {
+		parts = append(parts, "allow: "+strings.Join(r.DuplicateAllow, ", "))
+	}
+	if len(r.DuplicateDeny) > 0 {
+		parts = append(parts, "deny: "+strings.Join(r.DuplicateDeny, ", "))
+	}
+	if len(r.DuplicateAsk) > 0 {
+		parts = append(parts, "ask: "+strings.Join(r.DuplicateAsk, ", "))
+	}
+
+	return "removed " + strings.Join(parts, "; ")
+}
+
 // FindLocalConfigsFromProjects efficiently finds local .claude/settings.local.json files
 // by only checking the specific project directories provided.
 // It excludes the config file specified by excludePath (typically ~/.claude/settings.local.json).

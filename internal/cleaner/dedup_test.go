@@ -323,6 +323,64 @@ func TestDedupResult_TotalDuplicates(t *testing.T) {
 	assert.Equal(t, 6, result.TotalDuplicates())
 }
 
+func TestDedupResult_FormatAuditDetails(t *testing.T) {
+	tests := []struct {
+		name     string
+		result   DedupResult
+		expected string
+	}{
+		{
+			name: "allow only",
+			result: DedupResult{
+				DuplicateAllow: []string{"Bash(git:*)", "Read(**)"},
+			},
+			expected: "removed allow: Bash(git:*), Read(**)",
+		},
+		{
+			name: "deny only",
+			result: DedupResult{
+				DuplicateDeny: []string{"Bash(rm -rf:*)"},
+			},
+			expected: "removed deny: Bash(rm -rf:*)",
+		},
+		{
+			name: "ask only",
+			result: DedupResult{
+				DuplicateAsk: []string{"Write(**)"},
+			},
+			expected: "removed ask: Write(**)",
+		},
+		{
+			name: "all categories",
+			result: DedupResult{
+				DuplicateAllow: []string{"Bash(git:*)"},
+				DuplicateDeny:  []string{"Bash(rm:*)"},
+				DuplicateAsk:   []string{"Write(**)"},
+			},
+			expected: "removed allow: Bash(git:*); deny: Bash(rm:*); ask: Write(**)",
+		},
+		{
+			name: "suggest delete",
+			result: DedupResult{
+				DuplicateAllow: []string{"Bash(git:*)"},
+				SuggestDelete:  true,
+			},
+			expected: "deleted (all entries were duplicates)",
+		},
+		{
+			name:     "no duplicates",
+			result:   DedupResult{},
+			expected: "no changes",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, tc.result.FormatAuditDetails())
+		})
+	}
+}
+
 func TestBuildDedupPreview_Verbose(t *testing.T) {
 	globalPath := "/home/user/.claude/settings.json"
 	results := []DedupResult{

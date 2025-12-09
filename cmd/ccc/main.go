@@ -400,11 +400,11 @@ func cleanConfig(args *Args, paths *claude.Paths, stdin io.Reader, stdout, stder
 			continue
 		}
 		if auditLogger != nil {
+			action := ui.ActionModify
 			if r.SuggestDelete {
-				_ = auditLogger.Log(ui.ActionDelete, r.LocalPath, 0)
-			} else {
-				_ = auditLogger.Log(ui.ActionModify, r.LocalPath, 0)
+				action = ui.ActionDelete
 			}
+			_ = auditLogger.LogWithDetails(action, r.LocalPath, r.FormatAuditDetails())
 		}
 	}
 

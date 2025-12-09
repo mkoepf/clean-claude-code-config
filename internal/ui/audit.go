@@ -50,6 +50,21 @@ func (l *AuditLogger) Log(action Action, path string, size int64) error {
 	return err
 }
 
+// LogWithDetails writes an audit entry with additional details about the change.
+// Format: 2025-12-06T16:00:00Z MODIFY /path/to/file: details here
+func (l *AuditLogger) LogWithDetails(action Action, path string, details string) error {
+	if l.closed {
+		return fmt.Errorf("audit logger is closed")
+	}
+
+	timestamp := l.now().UTC().Format(time.RFC3339)
+
+	entry := fmt.Sprintf("%s %s %s: %s\n", timestamp, action, path, details)
+
+	_, err := l.file.WriteString(entry)
+	return err
+}
+
 // Close closes the audit log file.
 func (l *AuditLogger) Close() error {
 	l.closed = true

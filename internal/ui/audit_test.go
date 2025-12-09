@@ -159,3 +159,52 @@ func TestAuditLogger_Close(t *testing.T) {
 	err = logger.Log(ActionDelete, "/path", 100)
 	assert.Error(t, err)
 }
+
+func TestAuditLogger_LogWithDetails(t *testing.T) {
+	tmpDir := t.TempDir()
+	logPath := filepath.Join(tmpDir, "audit.log")
+
+	logger, err := NewAuditLogger(logPath)
+	require.NoError(t, err)
+	defer logger.Close()
+
+	fixedTime := time.Date(2025, 12, 6, 16, 0, 0, 0, time.UTC)
+	logger.now = func() time.Time { return fixedTime }
+
+	err = logger.LogWithDetails(ActionModify, "/path/to/settings.json", "removed allow: Bash(git:*), Bash(npm:*)")
+	require.NoError(t, err)
+
+	content, err := os.ReadFile(logPath)
+	require.NoError(t, err)
+
+	expected := "2025-12-06T16:00:00Z MODIFY /path/to/settings.json: removed allow: Bash(git:*), Bash(npm:*)\n"
+	assert.Equal(t, expected, string(content))
+}
+
+func TestAuditLogger_LogWithDetails_MultipleEntries(t *testing.T) {
+	tmpDir := t.TempDir()
+	logPath := filepath.Join(tmpDir, "audit.log")
+
+	logger, err := NewAuditLogger(logPath)
+	require.NoError(t, err)
+	defer logger.Close()
+
+	fixedTime := time.Date(2025, 12, 6, 16, 0, 0, 0, time.UTC)
+	logger.now = func() time.Time { return fixedTime }
+
+	err = logger.LogWithDetails(ActionModify, "/project1/.claude/settings.local.json", "removed allow: Bash(git:*)")
+	require.NoError(t, err)
+
+	err = logger.LogWithDetails(ActionDelete, "/project2/.claude/settings.local.json", "file empty after removing duplicates")
+	require.NoError(t, err)
+
+	content, err := os.ReadFile(logPath)
+	require.NoError(t, err)
+
+	lines := strings.Split(strings.TrimSpace(string(content)), "\n")
+	assert.Len(t, lines, 2)
+	assert.Contains(t, lines[0], "MODIFY")
+	assert.Contains(t, lines[0], "removed allow: Bash(git:*)")
+	assert.Contains(t, lines[1], "DELETE")
+	assert.Contains(t, lines[1], "file empty after removing duplicates")
+}
