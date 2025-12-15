@@ -87,7 +87,7 @@ jobs:
 
       - name: Upload coverage HTML report
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-report
           path: coverage.html
@@ -196,7 +196,7 @@ jobs:
         run: ./cccc --help
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: cccc-${{ runner.os }}
           path: cccc
